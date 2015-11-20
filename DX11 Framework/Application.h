@@ -20,6 +20,7 @@ struct ConstantBuffer
 	XMMATRIX mWorld;
 	XMMATRIX mView;
 	XMMATRIX mProjection;
+	float gTime;
 };
 
 class Application
@@ -52,6 +53,7 @@ private:
 	XMFLOAT4X4				_world5;
 	XMFLOAT4X4              _view;
 	XMFLOAT4X4              _projection;
+	float					gTime;
 
 private:
 	HRESULT InitWindow(HINSTANCE hInstance, int nCmdShow);
