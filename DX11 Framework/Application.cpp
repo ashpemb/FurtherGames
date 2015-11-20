@@ -288,7 +288,7 @@ HRESULT Application::InitPyramidIndexBuffer()
 	ZeroMemory(&bd, sizeof(bd));
 
 	bd.Usage = D3D11_USAGE_DEFAULT;
-	bd.ByteWidth = sizeof(WORD) * 15;
+	bd.ByteWidth = sizeof(WORD) * 18;
 	bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
 	bd.CPUAccessFlags = 0;
 
