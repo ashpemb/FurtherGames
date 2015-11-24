@@ -74,9 +74,10 @@ HRESULT Application::Initialise(HINSTANCE hInstance, int nCmdShow)
 	XMStoreFloat4x4(&_world3, XMMatrixIdentity());
 	XMStoreFloat4x4(&_world4, XMMatrixIdentity());
 	XMStoreFloat4x4(&_world5, XMMatrixIdentity());
+	XMStoreFloat4x4(&_worldGrid, XMMatrixIdentity());
 
     // Initialize the view matrix
-	XMVECTOR Eye = XMVectorSet(0.0f, 0.0f, -10.0f, 0.0f);
+	XMVECTOR Eye = XMVectorSet(0.0f, 5.0f, -10.0f, 0.0f);
 	XMVECTOR At = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
 	XMVECTOR Up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 
@@ -303,6 +304,126 @@ HRESULT Application::InitPyramidIndexBuffer()
 	return S_OK;
 }
 
+HRESULT Application::InitGridVertexBuffer()
+{
+	HRESULT hr;
+
+	// Create vertex buffer
+	SimpleVertex gridVertices[] =
+	{
+		{ XMFLOAT3(0.0f, 0.0f, 2.0f), XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f) },		//Float3 is postion		Float3 is the Normal
+		{ XMFLOAT3(0.5f, 0.0f, 2.0f), XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f) },
+		{ XMFLOAT3(1.0f, 0.0f, 2.0f), XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f) },
+		{ XMFLOAT3(1.5f, 0.0f, 2.0f), XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f) },
+		{ XMFLOAT3(2.0f, 0.0f, 2.0f), XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f) },
+
+		{ XMFLOAT3(0.0f, 0.0f, 1.5f), XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f) },
+		{ XMFLOAT3(0.5f, 0.0f, 1.5f), XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f) },
+		{ XMFLOAT3(1.0f, 0.0f, 1.5f), XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f) },
+		{ XMFLOAT3(1.5f, 0.0f, 1.5f), XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f) },
+		{ XMFLOAT3(2.0f, 0.0f, 1.5f), XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f) },
+
+		{ XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f) },
+		{ XMFLOAT3(0.5f, 0.0f, 1.0f), XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f) },
+		{ XMFLOAT3(1.0f, 0.0f, 1.0f), XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f) },
+		{ XMFLOAT3(1.5f, 0.0f, 1.0f), XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f) },
+		{ XMFLOAT3(2.0f, 0.0f, 1.0f), XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f) },
+
+		{ XMFLOAT3(0.0f, 0.0f, 0.5f), XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f) },
+		{ XMFLOAT3(0.5f, 0.0f, 0.5f), XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f) },
+		{ XMFLOAT3(1.0f, 0.0f, 0.5f), XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f) },
+		{ XMFLOAT3(1.5f, 0.0f, 0.5f), XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f) },
+		{ XMFLOAT3(2.0f, 0.0f, 0.5f), XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f) },
+
+		{ XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f) },
+		{ XMFLOAT3(0.5f, 0.0f, 0.0f), XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f) },
+		{ XMFLOAT3(1.0f, 0.0f, 0.0f), XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f) },
+		{ XMFLOAT3(1.5f, 0.0f, 0.0f), XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f) },
+		{ XMFLOAT3(2.0f, 0.0f, 0.0f), XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f) },
+	};
+
+	D3D11_BUFFER_DESC bd;
+	ZeroMemory(&bd, sizeof(bd));
+	bd.Usage = D3D11_USAGE_DEFAULT;
+	bd.ByteWidth = sizeof(SimpleVertex)* 25;
+	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	bd.CPUAccessFlags = 0;
+
+	D3D11_SUBRESOURCE_DATA InitData;
+	ZeroMemory(&InitData, sizeof(InitData));
+	InitData.pSysMem = gridVertices;
+
+	hr = _pd3dDevice->CreateBuffer(&bd, &InitData, &_pGridVertexBuffer);
+
+	if (FAILED(hr))
+		return hr;
+
+	return S_OK;
+}
+
+HRESULT Application::InitGridIndexBuffer()
+{
+	HRESULT hr;
+
+	// Create index buffer
+	WORD gridIndices[] =
+	{
+		0, 1, 6,
+		0, 6, 5,
+		1, 2, 7,
+		1, 7, 6,
+		2, 3, 8,
+		2, 8, 7,
+		3, 4, 9,
+		3, 9, 8,
+
+		5, 6, 11,
+		5, 11, 10,
+		6, 7, 12,
+		6, 12, 11,
+		7, 8, 13,
+		7, 13, 12,
+		8, 9, 14,
+		8, 14, 13,
+
+		10, 11, 16,
+		10, 16, 15,
+		11, 12, 17,
+		11, 17, 16,
+		12, 13, 18,
+		12, 18, 17,
+		13, 14, 19,
+		13, 19, 18,
+
+		15, 16, 21,
+		15, 21, 20,
+		16, 17, 22,
+		16, 22, 21,
+		17, 18, 23,
+		17, 23, 22,
+		18, 19, 24,
+		18, 24, 23,
+	};
+
+	D3D11_BUFFER_DESC bd;
+	ZeroMemory(&bd, sizeof(bd));
+
+	bd.Usage = D3D11_USAGE_DEFAULT;
+	bd.ByteWidth = sizeof(WORD)* 96;
+	bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
+	bd.CPUAccessFlags = 0;
+
+	D3D11_SUBRESOURCE_DATA InitData;
+	ZeroMemory(&InitData, sizeof(InitData));
+	InitData.pSysMem = gridIndices;
+	hr = _pd3dDevice->CreateBuffer(&bd, &InitData, &_pGridIndexBuffer);
+
+	if (FAILED(hr))
+		return hr;
+
+	return S_OK;
+}
+
 HRESULT Application::InitWindow(HINSTANCE hInstance, int nCmdShow)
 {
     // Register class
@@ -483,6 +604,7 @@ HRESULT Application::InitDevice()
 
 	InitVertexBuffer();
 	InitPyramidVertexBuffer();
+	InitGridVertexBuffer();
 
     // Set vertex buffer
     
@@ -490,7 +612,7 @@ HRESULT Application::InitDevice()
 
 	InitIndexBuffer();
 	InitPyramidIndexBuffer();
-
+	InitGridIndexBuffer();
     // Set index buffer
     
 
@@ -523,6 +645,8 @@ void Application::Cleanup()
     if (_pIndexBuffer) _pIndexBuffer->Release();
 	if (_pPyramidIndexBuffer) _pPyramidIndexBuffer->Release();
 	if (_pPyramidVertexBuffer) _pPyramidVertexBuffer->Release();
+	if (_pGridVertexBuffer) _pGridVertexBuffer->Release();
+	if (_pGridIndexBuffer) _pGridIndexBuffer->Release();
     if (_pVertexLayout) _pVertexLayout->Release();
     if (_pVertexShader) _pVertexShader->Release();
     if (_pPixelShader) _pPixelShader->Release();
@@ -576,6 +700,7 @@ void Application::Update()
 	XMStoreFloat4x4(&_world3, XMMatrixScaling(0.5f, 0.5f, 0.5f) * XMMatrixTranslation(7.0f, 0.0f, 0.0f) * XMMatrixRotationY(t) * XMMatrixTranslation(15.0f, 0.0f, 0.0f) * XMMatrixRotationY(t));
 	XMStoreFloat4x4(&_world4, XMMatrixRotationY(2*t) * XMMatrixTranslation(-25.0f, 0.0f, 0.0f) * XMMatrixRotationY(-t));
 	XMStoreFloat4x4(&_world5, XMMatrixScaling(0.5f, 0.5f, 0.5f) * XMMatrixTranslation(7.0f, 0.0f, 0.0f) * XMMatrixRotationY(-2*t) * XMMatrixTranslation(-25.0f, 0.0f, 0.0f) * XMMatrixRotationY(-t));
+	XMStoreFloat4x4(&_worldGrid, XMMatrixScaling(1.5f, 1.5f, 1.5f) * XMMatrixRotationY(t) * XMMatrixTranslation(0.0f, 0.0f, -5.0f));
 }
 
 void Application::Draw()
@@ -645,6 +770,14 @@ void Application::Draw()
 	cb.mWorld = XMMatrixTranspose(world);
 	_pImmediateContext->UpdateSubresource(_pConstantBuffer, 0, nullptr, &cb, 0, 0);
 	_pImmediateContext->DrawIndexed(36, 0, 0);
+
+	_pImmediateContext->IASetVertexBuffers(0, 1, &_pGridVertexBuffer, &stride, &offset);
+	_pImmediateContext->IASetIndexBuffer(_pGridIndexBuffer, DXGI_FORMAT_R16_UINT, 0);
+
+	world = XMLoadFloat4x4(&_worldGrid);
+	cb.mWorld = XMMatrixTranspose(world);
+	_pImmediateContext->UpdateSubresource(_pConstantBuffer, 0, nullptr, &cb, 0, 0);
+	_pImmediateContext->DrawIndexed(96, 0, 0);
 
     //
     // Present our back buffer to our front buffer

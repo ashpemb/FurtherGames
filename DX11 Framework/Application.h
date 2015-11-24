@@ -41,8 +41,10 @@ private:
 	ID3D11InputLayout*      _pVertexLayout;
 	ID3D11Buffer*           _pVertexBuffer;
 	ID3D11Buffer*           _pPyramidVertexBuffer;
+	ID3D11Buffer*           _pGridVertexBuffer;
 	ID3D11Buffer*           _pIndexBuffer;
 	ID3D11Buffer*           _pPyramidIndexBuffer;
+	ID3D11Buffer*           _pGridIndexBuffer;
 	ID3D11Buffer*           _pConstantBuffer;
 	ID3D11DepthStencilView* _depthStencilView;
 	ID3D11Texture2D*		_depthStencilBuffer;
@@ -51,6 +53,7 @@ private:
 	XMFLOAT4X4				_world3;
 	XMFLOAT4X4				_world4;
 	XMFLOAT4X4				_world5;
+	XMFLOAT4X4				_worldGrid;
 	XMFLOAT4X4              _view;
 	XMFLOAT4X4              _projection;
 	float					gTime;
@@ -65,6 +68,8 @@ private:
 	HRESULT InitIndexBuffer();
 	HRESULT InitPyramidVertexBuffer();
 	HRESULT InitPyramidIndexBuffer();
+	HRESULT InitGridVertexBuffer();
+	HRESULT InitGridIndexBuffer();
 
 	UINT _WindowHeight;
 	UINT _WindowWidth;
