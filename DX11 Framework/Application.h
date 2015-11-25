@@ -23,7 +23,10 @@ struct ConstantBuffer
 	XMFLOAT4 DiffuseMtrl;
 	XMFLOAT4 DiffuseLight;
 	XMFLOAT3 LightVecW;
+	float fill1;
+	XMFLOAT3 AmbientLight;
 	float gTime;
+	XMFLOAT3 AmbientMaterial;
 };
 
 class Application
@@ -62,6 +65,8 @@ private:
 	XMFLOAT3				lightDirection;
 	XMFLOAT4				diffuseMaterial;
 	XMFLOAT4				diffuseLight;
+	XMFLOAT3				ambientLight;
+	XMFLOAT3				ambientMaterial;
 
 	float					gTime;
 

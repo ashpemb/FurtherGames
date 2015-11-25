@@ -643,6 +643,9 @@ HRESULT Application::InitDevice()
 	diffuseMaterial = XMFLOAT4(0.8f, 0.5f, 0.5f, 1.0f);
 	// Diffuse light colour (RGBA)
 	diffuseLight = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+
+	ambientLight = XMFLOAT3(0.2f, 0.2f, 0.2f);
+	ambientMaterial = XMFLOAT3(0.8f, 0.5f, 0.5f);
 	
 
     return S_OK;
@@ -744,6 +747,8 @@ void Application::Draw()
 	cb.DiffuseLight = diffuseLight;
 	cb.DiffuseMtrl = diffuseMaterial;
 	cb.LightVecW = lightDirection;
+	cb.AmbientLight = ambientLight;
+	cb.AmbientMaterial = ambientMaterial;
 	cb.gTime = gTime;
 
 	_pImmediateContext->UpdateSubresource(_pConstantBuffer, 0, nullptr, &cb, 0, 0);

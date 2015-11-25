@@ -16,6 +16,8 @@ cbuffer ConstantBuffer : register( b0 )
 	float4 DiffuseLight;
 	float3 LightVecW;
 	float gTime;
+	float4 AmbientMaterial;
+	float4 AmbientLight;
 }
 
 //--------------------------------------------------------------------------------------
@@ -43,7 +45,9 @@ VS_OUTPUT VS(float4 Pos : POSITION, float3 NormalL : NORMAL)
 
 	// Compute Colour using Diffuse lighting only
 	float diffuseAmount = max(dot(LightVecW, normalW), 0.0f);
-	output.Color.rgb = diffuseAmount * (DiffuseMtrl * DiffuseLight).rgb;
+	float4 ambient = AmbientMaterial * AmbientLight;
+	float3 diffuse = diffuseAmount * (DiffuseMtrl * DiffuseLight).rgb;
+	output.Color.rgb = diffuse + ambient;
 	output.Color.a = DiffuseMtrl.a;
 
 	return output;
