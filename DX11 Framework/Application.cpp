@@ -638,14 +638,19 @@ HRESULT Application::InitDevice()
 	if (FAILED(hr))
 		return hr;
 	// Light direction from surface (XYZ)
-	lightDirection = XMFLOAT3(0.25f, 0.5f, -1.0f);
+	lightDirection = XMFLOAT3(0.0f, 0.0f, -1.0f);
 	// Diffuse material properties (RGBA)
 	diffuseMaterial = XMFLOAT4(0.8f, 0.5f, 0.5f, 1.0f);
 	// Diffuse light colour (RGBA)
 	diffuseLight = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 
-	ambientLight = XMFLOAT3(0.2f, 0.2f, 0.2f);
-	ambientMaterial = XMFLOAT3(0.8f, 0.5f, 0.5f);
+	ambientLight = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
+	ambientMaterial = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
+
+	specMaterial = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);
+	specLight = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
+	specPower = float(10.0f);
+	eyePos = XMFLOAT3(0.0f, 5.0f, -10.0f);
 	
 
     return S_OK;
@@ -723,7 +728,7 @@ void Application::Draw()
     //
     // Clear the back buffer
     //
-    float ClearColor[4] = {0.0f, 0.125f, 0.3f, 1.0f}; // red,green,blue,alpha
+    float ClearColor[4] = {0.0f, 0.0f, 0.0f, 1.0f}; // red,green,blue,alpha
     _pImmediateContext->ClearRenderTargetView(_pRenderTargetView, ClearColor);
 
 	_pImmediateContext->ClearDepthStencilView(_depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
@@ -750,6 +755,10 @@ void Application::Draw()
 	cb.AmbientLight = ambientLight;
 	cb.AmbientMaterial = ambientMaterial;
 	cb.gTime = gTime;
+	cb.SpecularMaterial = specMaterial;
+	cb.SpecularLight = specLight;
+	cb.SpecularPower = specPower;
+	cb.EyePosW = eyePos;
 
 	_pImmediateContext->UpdateSubresource(_pConstantBuffer, 0, nullptr, &cb, 0, 0);
 
@@ -762,8 +771,8 @@ void Application::Draw()
     //
 	_pImmediateContext->VSSetShader(_pVertexShader, nullptr, 0);
 	_pImmediateContext->VSSetConstantBuffers(0, 1, &_pConstantBuffer);
-	_pImmediateContext->PSSetConstantBuffers(0, 1, &_pConstantBuffer);
 	_pImmediateContext->PSSetShader(_pPixelShader, nullptr, 0);
+	_pImmediateContext->PSSetConstantBuffers(0, 1, &_pConstantBuffer);
 	_pImmediateContext->DrawIndexed(36, 0, 0);   
 
 	_pImmediateContext->IASetVertexBuffers(0, 1, &_pPyramidVertexBuffer, &stride, &offset);

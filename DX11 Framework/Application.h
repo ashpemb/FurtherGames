@@ -23,10 +23,13 @@ struct ConstantBuffer
 	XMFLOAT4 DiffuseMtrl;
 	XMFLOAT4 DiffuseLight;
 	XMFLOAT3 LightVecW;
-	float fill1;
-	XMFLOAT3 AmbientLight;
 	float gTime;
-	XMFLOAT3 AmbientMaterial;
+	XMFLOAT4 AmbientMaterial;
+	XMFLOAT4 AmbientLight;
+	XMFLOAT4 SpecularMaterial;
+	XMFLOAT4 SpecularLight;
+	float SpecularPower;
+	XMFLOAT3 EyePosW;
 };
 
 class Application
@@ -65,8 +68,12 @@ private:
 	XMFLOAT3				lightDirection;
 	XMFLOAT4				diffuseMaterial;
 	XMFLOAT4				diffuseLight;
-	XMFLOAT3				ambientLight;
-	XMFLOAT3				ambientMaterial;
+	XMFLOAT4				ambientLight;
+	XMFLOAT4				ambientMaterial;
+	XMFLOAT4				specMaterial;
+	XMFLOAT4				specLight;
+	float					specPower;
+	XMFLOAT3				eyePos;
 
 	float					gTime;
 

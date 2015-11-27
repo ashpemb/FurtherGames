@@ -18,13 +18,20 @@ cbuffer ConstantBuffer : register( b0 )
 	float gTime;
 	float4 AmbientMaterial;
 	float4 AmbientLight;
+	float4 SpecularMaterial;
+	float4 SpecularLight;
+	float SpecularPower;
+	float3 EyePosW;
+
 }
 
 //--------------------------------------------------------------------------------------
 struct VS_OUTPUT
 {
     float4 Pos : SV_POSITION;
-    float4 Color : COLOR0;
+    //float4 Color : COLOR0;
+	float3 NormalW : NORMAL;
+	float3 PosW : POSITION;
 };
 
 //------------------------------------------------------------------------------------
@@ -34,23 +41,24 @@ VS_OUTPUT VS(float4 Pos : POSITION, float3 NormalL : NORMAL)
 {
 	VS_OUTPUT output = (VS_OUTPUT)0;
 
+
 	output.Pos = mul(Pos, World);
-	output.Pos = mul(output.Pos, View);
+
+	output.PosW = output.Pos;
+
+	output.Pos = mul(output.Pos, View); // VS
 	output.Pos = mul(output.Pos, Projection);
 
-	// Convert from local space to world space 
-	// W component of vector is 0 as vectors cannot be translated
-	float3 normalW = mul(float4(NormalL, 0.0f), World).xyz;
-		normalW = normalize(normalW);
 
-	// Compute Colour using Diffuse lighting only
-	float diffuseAmount = max(dot(LightVecW, normalW), 0.0f);
-	float4 ambient = AmbientMaterial * AmbientLight;
-	float3 diffuse = diffuseAmount * (DiffuseMtrl * DiffuseLight).rgb;
-	output.Color.rgb = diffuse + ambient;
-	output.Color.a = DiffuseMtrl.a;
+	// Apply View and Projection transformations
+	float3 normalW = mul(float4(NormalL, 0.0f), World).xyz; // VS
+	output.NormalW = normalize(normalW);
+	// Convert normal from local space to world space
+
+
 
 	return output;
+
 }
 
 
@@ -60,5 +68,30 @@ VS_OUTPUT VS(float4 Pos : POSITION, float3 NormalL : NORMAL)
 //--------------------------------------------------------------------------------------
 float4 PS( VS_OUTPUT input ) : SV_Target
 {
-    return input.Color;
+	float3 normalW = normalize(input.NormalW);
+	// Compute the vector from the vertex to the eye position.
+	// output.Pos is currently the position in world space
+	float3 toEye = normalize(EyePosW - input.PosW.xyz); // PS
+
+	// Compute Colour
+	// Compute the reflection vector.
+	float3 r = reflect(-LightVecW, normalW); // PS
+
+	// Determine how much (if any) specular light makes it
+	// into the eye.
+	float specularAmount = pow(max(dot(r, toEye), 0.0f), SpecularPower);
+
+	// Calculate Diffuse and Ambient Lighting
+	float diffuseAmount = max(dot(LightVecW, normalW), 0.0f);
+	float4 ambient = AmbientMaterial * AmbientLight;
+		float3 diffuse = diffuseAmount * (DiffuseMtrl * DiffuseLight).rgb;
+		// Compute the ambient, diffuse, and specular terms separately.
+		float3 specular = specularAmount * (SpecularMaterial * SpecularLight).rgb;
+
+		// Sum all the terms together and copy over the diffuse alpha.
+		float4 Color;
+	Color.rgb = ambient + diffuse + specular;
+	Color.a = DiffuseMtrl.a;
+
+    return Color;
 }
