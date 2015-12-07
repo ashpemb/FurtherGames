@@ -6,6 +6,7 @@
 #include <directxmath.h>
 #include <directxcolors.h>
 #include "resource.h"
+#include "DDSTextureLoader.h"
 
 using namespace DirectX;
 
@@ -58,6 +59,8 @@ private:
 	ID3D11Buffer*           _pConstantBuffer;
 	ID3D11DepthStencilView* _depthStencilView;
 	ID3D11Texture2D*		_depthStencilBuffer;
+	ID3D11ShaderResourceView * _pTextureRV = nullptr;
+	ID3D11SamplerState * _pSamplerLinear = nullptr;
 	XMFLOAT4X4              _world;
 	XMFLOAT4X4				_world2;
 	XMFLOAT4X4				_world3;

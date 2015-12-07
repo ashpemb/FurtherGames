@@ -80,6 +80,22 @@ HRESULT Application::Initialise(HINSTANCE hInstance, int nCmdShow)
 	XMStoreFloat4x4(&_world5, XMMatrixIdentity());
 	XMStoreFloat4x4(&_worldGrid, XMMatrixIdentity());
 
+
+	// Create the sample state
+	D3D11_SAMPLER_DESC sampDesc;
+	ZeroMemory(&sampDesc, sizeof(sampDesc));
+	sampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+	sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+	sampDesc.MinLOD = 0;
+	sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
+
+	_pd3dDevice->CreateSamplerState(&sampDesc, &_pSamplerLinear);
+
+	_pImmediateContext->PSSetSamplers(0, 1, &_pSamplerLinear);
+
     // Initialize the view matrix
 	XMVECTOR Eye = XMVectorSet(0.0f, 5.0f, -10.0f, 0.0f);
 	XMVECTOR At = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
@@ -159,6 +175,10 @@ HRESULT Application::InitShadersAndInputLayout()
     // Set the input layout
     _pImmediateContext->IASetInputLayout(_pVertexLayout);
 
+	CreateDDSTextureFromFile(_pd3dDevice, L"Crate_COLOR.dds", nullptr, &_pTextureRV);
+
+	_pImmediateContext->PSSetShaderResources(0, 1, &_pTextureRV);
+
 	return hr;
 }
 
@@ -169,14 +189,14 @@ HRESULT Application::InitVertexBuffer()
     // Create vertex buffer
     SimpleVertex vertices[] =
     {
-		{ XMFLOAT3(-1.0f, 1.0f, -1.0f), XMFLOAT3(-1.0f, 1.0f, -1.0f) },
-		{ XMFLOAT3(1.0f, 1.0f, -1.0f), XMFLOAT3(1.0f, 1.0f, -1.0f) },
-		{ XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT3(-1.0f, -1.0f, -1.0f) },
-		{ XMFLOAT3(1.0f, -1.0f, -1.0f), XMFLOAT3(1.0f, -1.0f, -1.0f) },
-		{ XMFLOAT3(-1.0f, 1.0f, 1.0f), XMFLOAT3(-1.0f, 1.0f, 1.0f) },
-		{ XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT3(1.0f, 1.0f, 1.0f) },
-		{ XMFLOAT3(-1.0f, -1.0f, 1.0f), XMFLOAT3(-1.0f, -1.0f, 1.0f) },
-		{ XMFLOAT3(1.0f, -1.0f, 1.0f), XMFLOAT3(1.0f, -1.0f, 1.0f) },
+		{ XMFLOAT3(-1.0f, 1.0f, -1.0f), XMFLOAT3(-1.0f, 1.0f, -1.0f), XMFLOAT2(0.0f, 0.0f) },
+		{ XMFLOAT3(1.0f, 1.0f, -1.0f), XMFLOAT3(1.0f, 1.0f, -1.0f), XMFLOAT2(1.0f, 0.0f) },
+		{ XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT2(0.0f, 1.0f) },
+		{ XMFLOAT3(1.0f, -1.0f, -1.0f), XMFLOAT3(1.0f, -1.0f, -1.0f), XMFLOAT2(1.0f, 1.0f) },
+		{ XMFLOAT3(-1.0f, 1.0f, 1.0f), XMFLOAT3(-1.0f, 1.0f, 1.0f), XMFLOAT2(1.0f, 1.0f) },
+		{ XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT2(0.0f, 1.0f) },
+		{ XMFLOAT3(-1.0f, -1.0f, 1.0f), XMFLOAT3(-1.0f, -1.0f, 1.0f), XMFLOAT2(1.0f, 0.0f) },
+		{ XMFLOAT3(1.0f, -1.0f, 1.0f), XMFLOAT3(1.0f, -1.0f, 1.0f), XMFLOAT2(0.0f, 0.0f) },
 	};
 
     D3D11_BUFFER_DESC bd;
@@ -317,35 +337,35 @@ HRESULT Application::InitGridVertexBuffer()
 	// Create vertex buffer
 	SimpleVertex gridVertices[] =
 	{
-		{ XMFLOAT3(0.0f, 0.0f, 2.0f), XMFLOAT3(0.0f, 1.0f, 0.0f) },		
-		{ XMFLOAT3(0.5f, 0.0f, 2.0f), XMFLOAT3(0.0f, 1.0f, 0.0f) },
-		{ XMFLOAT3(1.0f, 0.0f, 2.0f), XMFLOAT3(0.0f, 1.0f, 0.0f) },
-		{ XMFLOAT3(1.5f, 0.0f, 2.0f), XMFLOAT3(0.0f, 1.0f, 0.0f) },
-		{ XMFLOAT3(2.0f, 0.0f, 2.0f), XMFLOAT3(0.0f, 1.0f, 0.0f) },
+		{ XMFLOAT3(0.0f, 0.0f, 2.0f), XMFLOAT3(1.0f, -1.0f, 0.0f) },		
+		{ XMFLOAT3(0.5f, 0.0f, 2.0f), XMFLOAT3(1.0f, -1.0f, 0.0f) },
+		{ XMFLOAT3(1.0f, 0.0f, 2.0f), XMFLOAT3(1.0f, -1.0f, 0.0f) },
+		{ XMFLOAT3(1.5f, 0.0f, 2.0f), XMFLOAT3(1.0f, -1.0f, 0.0f) },
+		{ XMFLOAT3(2.0f, 0.0f, 2.0f), XMFLOAT3(1.0f, -1.0f, 0.0f) },
 
-		{ XMFLOAT3(0.0f, 0.0f, 1.5f), XMFLOAT3(0.0f, 1.0f, 0.0f) },
-		{ XMFLOAT3(0.5f, 0.0f, 1.5f), XMFLOAT3(0.0f, 1.0f, 0.0f) },
-		{ XMFLOAT3(1.0f, 0.0f, 1.5f), XMFLOAT3(0.0f, 1.0f, 0.0f) },
-		{ XMFLOAT3(1.5f, 0.0f, 1.5f), XMFLOAT3(0.0f, 1.0f, 0.0f) },
-		{ XMFLOAT3(2.0f, 0.0f, 1.5f), XMFLOAT3(0.0f, 1.0f, 0.0f) },
+		{ XMFLOAT3(0.0f, 0.0f, 1.5f), XMFLOAT3(1.0f, -1.0f, 0.0f) },
+		{ XMFLOAT3(0.5f, 0.0f, 1.5f), XMFLOAT3(1.0f, -1.0f, 0.0f) },
+		{ XMFLOAT3(1.0f, 0.0f, 1.5f), XMFLOAT3(1.0f, -1.0f, 0.0f) },
+		{ XMFLOAT3(1.5f, 0.0f, 1.5f), XMFLOAT3(1.0f, -1.0f, 0.0f) },
+		{ XMFLOAT3(2.0f, 0.0f, 1.5f), XMFLOAT3(1.0f, -1.0f, 0.0f) },
 
-		{ XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f) },
-		{ XMFLOAT3(0.5f, 0.0f, 1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f) },
-		{ XMFLOAT3(1.0f, 0.0f, 1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f) },
-		{ XMFLOAT3(1.5f, 0.0f, 1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f) },
-		{ XMFLOAT3(2.0f, 0.0f, 1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f) },
+		{ XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT3(1.0f, -1.0f, 0.0f) },
+		{ XMFLOAT3(0.5f, 0.0f, 1.0f), XMFLOAT3(1.0f, -1.0f, 0.0f) },
+		{ XMFLOAT3(1.0f, 0.0f, 1.0f), XMFLOAT3(1.0f, -1.0f, 0.0f) },
+		{ XMFLOAT3(1.5f, 0.0f, 1.0f), XMFLOAT3(1.0f, -1.0f, 0.0f) },
+		{ XMFLOAT3(2.0f, 0.0f, 1.0f), XMFLOAT3(1.0f, -1.0f, 0.0f) },
 
-		{ XMFLOAT3(0.0f, 0.0f, 0.5f), XMFLOAT3(0.0f, 1.0f, 0.0f) },
-		{ XMFLOAT3(0.5f, 0.0f, 0.5f), XMFLOAT3(0.0f, 1.0f, 0.0f) },
-		{ XMFLOAT3(1.0f, 0.0f, 0.5f), XMFLOAT3(0.0f, 1.0f, 0.0f) },
-		{ XMFLOAT3(1.5f, 0.0f, 0.5f), XMFLOAT3(0.0f, 1.0f, 0.0f) },
-		{ XMFLOAT3(2.0f, 0.0f, 0.5f), XMFLOAT3(0.0f, 1.0f, 0.0f) },
+		{ XMFLOAT3(0.0f, 0.0f, 0.5f), XMFLOAT3(1.0f, -1.0f, 0.0f) },
+		{ XMFLOAT3(0.5f, 0.0f, 0.5f), XMFLOAT3(1.0f, -1.0f, 0.0f) },
+		{ XMFLOAT3(1.0f, 0.0f, 0.5f), XMFLOAT3(1.0f, -1.0f, 0.0f) },
+		{ XMFLOAT3(1.5f, 0.0f, 0.5f), XMFLOAT3(1.0f, -1.0f, 0.0f) },
+		{ XMFLOAT3(2.0f, 0.0f, 0.5f), XMFLOAT3(1.0f, -1.0f, 0.0f) },
 
-		{ XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f) },
-		{ XMFLOAT3(0.5f, 0.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f) },
-		{ XMFLOAT3(1.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f) },
-		{ XMFLOAT3(1.5f, 0.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f) },
-		{ XMFLOAT3(2.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f) },
+		{ XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(1.0f, -1.0f, 0.0f) },
+		{ XMFLOAT3(0.5f, 0.0f, 0.0f), XMFLOAT3(1.0f, -1.0f, 0.0f) },
+		{ XMFLOAT3(1.0f, 0.0f, 0.0f), XMFLOAT3(1.0f, -1.0f, 0.0f) },
+		{ XMFLOAT3(1.5f, 0.0f, 0.0f), XMFLOAT3(1.0f, -1.0f, 0.0f) },
+		{ XMFLOAT3(2.0f, 0.0f, 0.0f), XMFLOAT3(1.0f, -1.0f, 0.0f) },
 	};
 
 	D3D11_BUFFER_DESC bd;
@@ -729,10 +749,14 @@ void Application::Draw()
     //
     // Clear the back buffer
     //
+
+
+
     float ClearColor[4] = {0.0f, 0.0f, 0.0f, 1.0f}; // red,green,blue,alpha
     _pImmediateContext->ClearRenderTargetView(_pRenderTargetView, ClearColor);
 
 	_pImmediateContext->ClearDepthStencilView(_depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+
 
 	XMMATRIX world = XMLoadFloat4x4(&_world);
 	XMMATRIX view = XMLoadFloat4x4(&_view);
@@ -762,6 +786,7 @@ void Application::Draw()
 	cb.EyePosW = eyePos;
 
 	_pImmediateContext->UpdateSubresource(_pConstantBuffer, 0, nullptr, &cb, 0, 0);
+
 
 
 	_pImmediateContext->IASetVertexBuffers(0, 1, &_pVertexBuffer, &stride, &offset);

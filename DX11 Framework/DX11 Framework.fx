@@ -4,6 +4,9 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 //--------------------------------------------------------------------------------------
 
+Texture2D txDiffuse : register(t0);
+SamplerState samLinear : register(s0);
+
 //--------------------------------------------------------------------------------------
 // Constant Buffer Variables
 //--------------------------------------------------------------------------------------
@@ -29,22 +32,26 @@ cbuffer ConstantBuffer : register( b0 )
 struct VS_OUTPUT
 {
     float4 Pos : SV_POSITION;
-    //float4 Color : COLOR0;
 	float3 NormalW : NORMAL;
 	float3 PosW : POSITION;
+	float2 Tex : TEXCOORD;
 };
+
+
 
 //------------------------------------------------------------------------------------
 // Vertex Shader - Implements Gouraud Shading using Diffuse lighting only
 //------------------------------------------------------------------------------------
-VS_OUTPUT VS(float4 Pos : POSITION, float3 NormalL : NORMAL)
+VS_OUTPUT VS(float4 Pos : POSITION, float3 NormalL : NORMAL, float2 Tex : TEXCOORD)
 {
 	VS_OUTPUT output = (VS_OUTPUT)0;
 
-
+	
 	output.Pos = mul(Pos, World);
 
 	output.PosW = output.Pos;
+
+	output.Tex = Tex;
 
 	output.Pos = mul(output.Pos, View); // VS
 	output.Pos = mul(output.Pos, Projection);
@@ -71,6 +78,9 @@ float4 PS( VS_OUTPUT input ) : SV_Target
 	float3 normalW = normalize(input.NormalW);
 	// Compute the vector from the vertex to the eye position.
 	// output.Pos is currently the position in world space
+
+	float4 textureColour = txDiffuse.Sample(samLinear, input.Tex);
+
 	float3 toEye = normalize(EyePosW - input.PosW.xyz); // PS
 
 	// Compute Colour
@@ -84,14 +94,15 @@ float4 PS( VS_OUTPUT input ) : SV_Target
 	// Calculate Diffuse and Ambient Lighting
 	float diffuseAmount = max(dot(LightVecW, normalW), 0.0f);
 	float4 ambient = AmbientMaterial * AmbientLight;
-		float3 diffuse = diffuseAmount * (DiffuseMtrl * DiffuseLight).rgb;
-		// Compute the ambient, diffuse, and specular terms separately.
-		float3 specular = specularAmount * (SpecularMaterial * SpecularLight).rgb;
+	float3 diffuse = diffuseAmount * (DiffuseMtrl * DiffuseLight).rgb;
+	// Compute the ambient, diffuse, and specular terms separately.
+	float3 specular = specularAmount * (SpecularMaterial * SpecularLight).rgb;
 
-		// Sum all the terms together and copy over the diffuse alpha.
-		float4 Color;
+	// Sum all the terms together and copy over the diffuse alpha.
+	float4 Color;
 	Color.rgb = ambient + diffuse + specular;
 	Color.a = DiffuseMtrl.a;
+	Color.rgb += textureColour;
 
     return Color;
 }
