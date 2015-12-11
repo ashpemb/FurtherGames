@@ -7,6 +7,7 @@
 #include <directxcolors.h>
 #include "resource.h"
 #include "DDSTextureLoader.h"
+#include "Camera.h"
 
 using namespace DirectX;
 
@@ -67,8 +68,6 @@ private:
 	XMFLOAT4X4				_world4;
 	XMFLOAT4X4				_world5;
 	XMFLOAT4X4				_worldGrid;
-	XMFLOAT4X4              _view;
-	XMFLOAT4X4              _projection;
 	XMFLOAT3				lightDirection;
 	XMFLOAT4				diffuseMaterial;
 	XMFLOAT4				diffuseLight;
@@ -78,8 +77,11 @@ private:
 	XMFLOAT4				specLight;
 	float					specPower;
 	XMFLOAT3				eyePos;
-
 	float					gTime;
+	Camera*					camera1;
+	Camera*					camera2;
+	XMFLOAT4X4				_View;
+	XMFLOAT4X4				_Projection;
 
 private:
 	HRESULT InitWindow(HINSTANCE hInstance, int nCmdShow);
@@ -106,7 +108,6 @@ public:
 	void Update();
 	void Draw();
 
-	#define VK_A			 0x41
-	#define VK_B			 0x42
+
 };
 
