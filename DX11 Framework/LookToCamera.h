@@ -10,20 +10,21 @@
 
 using namespace DirectX;
 
-class Camera
+class LookToCamera
 {
 public:
-	Camera(XMFLOAT4 _eye, XMFLOAT4 _at, XMFLOAT4 _up, UINT WindowWidth, UINT WindowHeight);
-	~Camera();
-	XMFLOAT4 Eye;
-	XMFLOAT4 At;
-	XMFLOAT4 Up;
-	UINT _WindowWidth;
-	UINT _WindowHeight;
-
-
+	LookToCamera(XMFLOAT4 _eye, XMFLOAT4 _to, XMFLOAT4 _up, UINT WindowWidth, UINT WindowHeight);
+	~LookToCamera();
 
 	XMFLOAT4X4 CreateView();
 	XMFLOAT4X4 CreateProjection();
+	void MoveEye(XMFLOAT4 _move, float gtime);
+
+private:
+	XMFLOAT4 Eye;
+	XMFLOAT4 To;
+	XMFLOAT4 Up;
+	UINT _WindowWidth;
+	UINT _WindowHeight;
 };
 

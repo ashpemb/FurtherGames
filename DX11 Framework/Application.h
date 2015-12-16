@@ -8,6 +8,7 @@
 #include "resource.h"
 #include "DDSTextureLoader.h"
 #include "Camera.h"
+#include "LookToCamera.h"
 
 using namespace DirectX;
 
@@ -79,9 +80,11 @@ private:
 	XMFLOAT3				eyePos;
 	float					gTime;
 	Camera*					camera1;
-	Camera*					camera2;
+	LookToCamera*			camera2;
 	XMFLOAT4X4				_View;
 	XMFLOAT4X4				_Projection;
+	XMFLOAT4				lookToMove;
+	XMFLOAT4				lookToMove2;
 
 private:
 	HRESULT InitWindow(HINSTANCE hInstance, int nCmdShow);

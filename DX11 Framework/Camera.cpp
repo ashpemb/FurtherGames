@@ -21,6 +21,7 @@ XMFLOAT4X4 Camera::CreateView()
 	return view;
 }
 
+
 XMFLOAT4X4 Camera::CreateProjection()
 {
 	XMFLOAT4X4 projection;

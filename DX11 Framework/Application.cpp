@@ -73,12 +73,15 @@ HRESULT Application::Initialise(HINSTANCE hInstance, int nCmdShow)
 	XMFLOAT4 At = { 0.0f, 0.0f, 0.0f, 0.0f };
 	XMFLOAT4 Up = { 0.0f, 1.0f, 0.0f, 0.0f };
 
-	XMFLOAT4 Eye2 = { 0.0f, -10.0f, -20.0f, 0.0f };
-	XMFLOAT4 At2 = { 0.0f, 0.0f, 0.0f, 0.0f };
+	XMFLOAT4 Eye2 = { 0.0f, 0.0f, 0.0f, 0.0f };
+	XMFLOAT4 To = { 0.0f, 0.0f, 1.0f, 0.0f };
 	XMFLOAT4 Up2 = { 0.0f, 1.0f, 0.0f, 0.0f };
 
 	camera1 = new Camera(Eye, At, Up, _WindowWidth, _WindowHeight);
-	camera2 = new Camera(Eye2, At2, Up2, _WindowWidth, _WindowHeight);
+	camera2 = new LookToCamera(Eye2, To, Up2, _WindowWidth, _WindowHeight);
+
+	lookToMove = { 0.0f, 0.0f, 0.1f, 0.0f };
+	lookToMove2 = { 0.0f, 0.0f, -0.1f, 0.0f };
 
 	_View = camera1->CreateView();
 	_Projection = camera1->CreateProjection();
@@ -772,12 +775,24 @@ void Application::Update()
 		_Projection = camera1->CreateProjection();
 	}
 
+	if (GetAsyncKeyState('W'))
+	{
+		camera2->MoveEye(lookToMove, gTime);
+		_View = camera2->CreateView();
+	}
+
+	if (GetAsyncKeyState('S'))
+	{
+		camera2->MoveEye(lookToMove2, gTime);
+		_View = camera2->CreateView();
+	}
+
 
     //
     // Animate the cube
     //
 	XMStoreFloat4x4(&_world, XMMatrixRotationY(t));
-	XMStoreFloat4x4(&_world2, XMMatrixRotationY(t) * XMMatrixTranslation(15.0f, 0.0f, 0.0f) * XMMatrixRotationY(t));
+	XMStoreFloat4x4(&_world2, XMMatrixTranslation(0.0f, 0.0f, 20.0f));
 	XMStoreFloat4x4(&_world3, XMMatrixScaling(0.5f, 0.5f, 0.5f) * XMMatrixTranslation(7.0f, 0.0f, 0.0f) * XMMatrixRotationY(t) * XMMatrixTranslation(15.0f, 0.0f, 0.0f) * XMMatrixRotationY(t));
 	XMStoreFloat4x4(&_world4, XMMatrixRotationY(2*t) * XMMatrixTranslation(-25.0f, 0.0f, 0.0f) * XMMatrixRotationY(-t));
 	XMStoreFloat4x4(&_world5, XMMatrixScaling(0.5f, 0.5f, 0.5f) * XMMatrixTranslation(7.0f, 0.0f, 0.0f) * XMMatrixRotationY(-2*t) * XMMatrixTranslation(-25.0f, 0.0f, 0.0f) * XMMatrixRotationY(-t));
