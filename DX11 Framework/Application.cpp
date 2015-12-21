@@ -73,15 +73,21 @@ HRESULT Application::Initialise(HINSTANCE hInstance, int nCmdShow)
 	XMFLOAT4 At = { 0.0f, 0.0f, 0.0f, 0.0f };
 	XMFLOAT4 Up = { 0.0f, 1.0f, 0.0f, 0.0f };
 
-	XMFLOAT4 Eye2 = { 0.0f, 0.0f, 0.0f, 0.0f };
+	XMFLOAT4 Eye2 = { 0.0f, 0.0f, -10.0f, 0.0f };
 	XMFLOAT4 To = { 0.0f, 0.0f, 1.0f, 0.0f };
 	XMFLOAT4 Up2 = { 0.0f, 1.0f, 0.0f, 0.0f };
 
 	camera1 = new Camera(Eye, At, Up, _WindowWidth, _WindowHeight);
 	camera2 = new LookToCamera(Eye2, To, Up2, _WindowWidth, _WindowHeight);
 
-	lookToMove = { 0.0f, 0.0f, 0.1f, 0.0f };
-	lookToMove2 = { 0.0f, 0.0f, -0.1f, 0.0f };
+	lookToMove = { 0.0f, 0.0f, 0.2f, 0.0f };
+	lookToMove2 = { 0.0f, 0.0f, -0.2f, 0.0f };
+	lookToMoveUpX = { 0.2f, 0.0f, 0.0f, 0.0f };
+	lookToMoveDownX = { -0.2f, 0.0f, 0.0f, 0.0f };
+	lookToMoveUpY = { 0.0f, 0.2f, 0.0f, 0.0f };
+	lookToMoveDownY = { 0.0f, -0.2f, 0.0f, 0.0f };
+
+	activeCamera = 1;
 
 	_View = camera1->CreateView();
 	_Projection = camera1->CreateProjection();
@@ -500,7 +506,7 @@ HRESULT Application::InitWindow(HINSTANCE hInstance, int nCmdShow)
 
     // Create window
     _hInst = hInstance;
-    RECT rc = {0, 0, 640, 480};
+    RECT rc = {0, 0, 900, 600};
     AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, FALSE);
     _hWnd = CreateWindow(L"TutorialWindowClass", L"DX11 Framework", WS_OVERLAPPEDWINDOW,
                          CW_USEDEFAULT, CW_USEDEFAULT, rc.right - rc.left, rc.bottom - rc.top, nullptr, nullptr, hInstance,
@@ -767,26 +773,70 @@ void Application::Update()
 	{
 		_View = camera2->CreateView();
 		_Projection = camera2->CreateProjection();
+		activeCamera = 2;
 	}
 
 	if (GetAsyncKeyState('X'))
 	{
 		_View = camera1->CreateView();
 		_Projection = camera1->CreateProjection();
+		activeCamera = 1;
 	}
-
-	if (GetAsyncKeyState('W'))
+	if (activeCamera == 1)
 	{
-		camera2->MoveEye(lookToMove, gTime);
-		_View = camera2->CreateView();
-	}
+		if (GetAsyncKeyState('W'))
+		{
+			float speed = 0.1f;
+			camera1->ZoomEye(gTime, speed);
+			_View = camera1->CreateView();
+		}
 
-	if (GetAsyncKeyState('S'))
+		if (GetAsyncKeyState('S'))
+		{
+			float speed = -0.1f;
+			camera1->ZoomEye(gTime, speed);
+			_View = camera1->CreateView();
+		}
+	}
+	else if (activeCamera == 2)
 	{
-		camera2->MoveEye(lookToMove2, gTime);
-		_View = camera2->CreateView();
-	}
 
+		if (GetAsyncKeyState('W'))
+		{
+			camera2->MoveEye(lookToMove, gTime);
+			_View = camera2->CreateView();
+		}
+
+		if (GetAsyncKeyState('S'))
+		{
+			camera2->MoveEye(lookToMove2, gTime);
+			_View = camera2->CreateView();
+		}
+
+		if (GetAsyncKeyState('A'))
+		{
+			camera2->MoveEye(lookToMoveDownX, gTime);
+			_View = camera2->CreateView();
+		}
+
+		if (GetAsyncKeyState('D'))
+		{
+			camera2->MoveEye(lookToMoveUpX, gTime);
+			_View = camera2->CreateView();
+		}
+
+		if (GetAsyncKeyState('R'))
+		{
+			camera2->MoveEye(lookToMoveUpY, gTime);
+			_View = camera2->CreateView();
+		}
+
+		if (GetAsyncKeyState('F'))
+		{
+			camera2->MoveEye(lookToMoveDownY, gTime);
+			_View = camera2->CreateView();
+		}
+	}
 
     //
     // Animate the cube

@@ -93,11 +93,18 @@ float4 PS( VS_OUTPUT input ) : SV_Target
 
 	// Calculate Diffuse and Ambient Lighting
 	float diffuseAmount = max(dot(LightVecW, normalW), 0.0f);
+	if (diffuseAmount <= 0.0f)
+	{
+		specularAmount = 0.0f;
+	}
 	float4 ambient = AmbientMaterial * AmbientLight;
 	float3 diffuse = diffuseAmount * (DiffuseMtrl * DiffuseLight).rgb;
 	// Compute the ambient, diffuse, and specular terms separately.
 	float3 specular = specularAmount * (SpecularMaterial * SpecularLight).rgb;
-
+	if (diffuseAmount <= 0.0f)
+	{
+		specularAmount = 0.0f;
+	}
 	// Sum all the terms together and copy over the diffuse alpha.
 	float4 Color;
 	Color.rgb = ambient + diffuse + specular;

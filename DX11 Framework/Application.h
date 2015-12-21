@@ -85,6 +85,11 @@ private:
 	XMFLOAT4X4				_Projection;
 	XMFLOAT4				lookToMove;
 	XMFLOAT4				lookToMove2;
+	XMFLOAT4				lookToMoveUpX;
+	XMFLOAT4				lookToMoveDownX;
+	XMFLOAT4				lookToMoveUpY;
+	XMFLOAT4				lookToMoveDownY;
+	int						activeCamera;
 
 private:
 	HRESULT InitWindow(HINSTANCE hInstance, int nCmdShow);

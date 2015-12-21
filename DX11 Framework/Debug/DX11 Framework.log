@@ -1,17 +1,19 @@
-﻿Build started 11/12/2015 17:08:57.
+﻿Build started 18/12/2015 16:56:26.
      1>Project "C:\Users\Ashley\Documents\Github\FurtherGames\DX11 Framework\DX11 Framework.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
          C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W4 /WX- /Od /Oi /Oy- /D WIN32 /D _DEBUG /D DEBUG /D PROFILE /D _WINDOWS /D D3DXFX_LARGEADDRESS_HANDLE /D _UNICODE /D UNICODE /Gm- /EHsc /RTC1 /MDd /GS /arch:SSE2 /fp:fast /Zc:wchar_t /Zc:forScope /openmp- /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt  Application.cpp
          Application.cpp
+     1>c:\users\ashley\documents\github\furthergames\dx11 framework\application.cpp(80): warning C4316: 'Camera' : object allocated on the heap may not be aligned 16
        Link:
          C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\Ashley\Documents\Github\FurtherGames\DX11 Framework\Debug\DX11 Framework.exe" /INCREMENTAL /NOLOGO d3d11.lib d3dcompiler.lib dxguid.lib winmm.lib comctl32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /manifestinput:"C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\Include\Manifest\dpiaware.manifest" /DEBUG /PDB:"C:\Users\Ashley\Documents\Github\FurtherGames\DX11 Framework\Debug\DX11 Framework.pdb" /SUBSYSTEM:WINDOWS /LARGEADDRESSAWARE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\Ashley\Documents\Github\FurtherGames\DX11 Framework\Debug\DX11 Framework.lib" /MACHINE:X86 /SAFESEH  "Debug\DX11 Framework.res"
          Debug\Application.obj
          Debug\Camera.obj
          Debug\DDSTextureLoader.obj
          "Debug\DX11 Framework.obj"
+         Debug\LookToCamera.obj
          DX11 Framework.vcxproj -> C:\Users\Ashley\Documents\Github\FurtherGames\DX11 Framework\Debug\DX11 Framework.exe
      1>Done Building Project "C:\Users\Ashley\Documents\Github\FurtherGames\DX11 Framework\DX11 Framework.vcxproj" (Build target(s)).
 
 Build succeeded.
 
-Time Elapsed 00:00:09.72
+Time Elapsed 00:00:12.54

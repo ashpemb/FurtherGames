@@ -15,15 +15,22 @@ class Camera
 public:
 	Camera(XMFLOAT4 _eye, XMFLOAT4 _at, XMFLOAT4 _up, UINT WindowWidth, UINT WindowHeight);
 	~Camera();
-	XMFLOAT4 Eye;
-	XMFLOAT4 At;
-	XMFLOAT4 Up;
-	UINT _WindowWidth;
-	UINT _WindowHeight;
-
 
 
 	XMFLOAT4X4 CreateView();
 	XMFLOAT4X4 CreateProjection();
+	void ZoomEye(float gtime, float speed);
+	void LoadVectors();
+
+private:
+	XMFLOAT4 Eye;
+	XMFLOAT4 At;
+	XMFLOAT4 Up;
+	XMFLOAT4 Zoom;
+	XMVECTOR eye;
+	XMVECTOR at;
+	XMVECTOR up;
+	UINT _WindowWidth;
+	UINT _WindowHeight;
 };
 
