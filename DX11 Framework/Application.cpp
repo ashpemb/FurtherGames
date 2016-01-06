@@ -69,6 +69,8 @@ HRESULT Application::Initialise(HINSTANCE hInstance, int nCmdShow)
         return E_FAIL;
     }
 
+	objMeshData = OBJLoader::Load("sphere.obj", _pd3dDevice);
+
 	XMFLOAT4 Eye = { 0.0f, 5.0f, -10.0f, 0.0f };
 	XMFLOAT4 At = { 0.0f, 0.0f, 0.0f, 0.0f };
 	XMFLOAT4 Up = { 0.0f, 1.0f, 0.0f, 0.0f };
@@ -101,6 +103,7 @@ HRESULT Application::Initialise(HINSTANCE hInstance, int nCmdShow)
 	XMStoreFloat4x4(&_world4, XMMatrixIdentity());
 	XMStoreFloat4x4(&_world5, XMMatrixIdentity());
 	XMStoreFloat4x4(&_worldGrid, XMMatrixIdentity());
+	XMStoreFloat4x4(&_worldSphere, XMMatrixIdentity());
 
 
 	// Create the sample state
@@ -847,6 +850,7 @@ void Application::Update()
 	XMStoreFloat4x4(&_world4, XMMatrixRotationY(2*t) * XMMatrixTranslation(-25.0f, 0.0f, 0.0f) * XMMatrixRotationY(-t));
 	XMStoreFloat4x4(&_world5, XMMatrixScaling(0.5f, 0.5f, 0.5f) * XMMatrixTranslation(7.0f, 0.0f, 0.0f) * XMMatrixRotationY(-2*t) * XMMatrixTranslation(-25.0f, 0.0f, 0.0f) * XMMatrixRotationY(-t));
 	XMStoreFloat4x4(&_worldGrid, XMMatrixScaling(1.5f, 1.5f, 1.5f) * XMMatrixRotationY(t) * XMMatrixTranslation(0.0f, 0.0f, -5.0f));
+	XMStoreFloat4x4(&_worldSphere, XMMatrixTranslation(0.0f, 10.0f, 0.0f) * XMMatrixRotationY(t));
 }
 
 void Application::Draw()
@@ -940,6 +944,14 @@ void Application::Draw()
 	cb.mWorld = XMMatrixTranspose(world);
 	_pImmediateContext->UpdateSubresource(_pConstantBuffer, 0, nullptr, &cb, 0, 0);
 	_pImmediateContext->DrawIndexed(96, 0, 0);
+
+	_pImmediateContext->IASetVertexBuffers(0, 1, &objMeshData.VertexBuffer, &stride, &offset);
+	_pImmediateContext->IASetIndexBuffer(objMeshData.IndexBuffer, DXGI_FORMAT_R16_UINT, 0);
+
+	world = XMLoadFloat4x4(&_worldSphere);
+	cb.mWorld = XMMatrixTranspose(world);
+	_pImmediateContext->UpdateSubresource(_pConstantBuffer, 0, nullptr, &cb, 0, 0);
+	_pImmediateContext->DrawIndexed(objMeshData.IndexCount, 0, 0);
 
     //
     // Present our back buffer to our front buffer

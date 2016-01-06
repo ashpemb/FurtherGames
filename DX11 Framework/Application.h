@@ -9,32 +9,10 @@
 #include "DDSTextureLoader.h"
 #include "Camera.h"
 #include "LookToCamera.h"
+#include "Structures.h"
+#include "OBJLoader.h"
 
 using namespace DirectX;
-
-struct SimpleVertex
-{
-    XMFLOAT3 Pos;
-    XMFLOAT3 Normal;
-	XMFLOAT2 TexC;
-};
-
-struct ConstantBuffer
-{
-	XMMATRIX mWorld;
-	XMMATRIX mView;
-	XMMATRIX mProjection;
-	XMFLOAT4 DiffuseMtrl;
-	XMFLOAT4 DiffuseLight;
-	XMFLOAT3 LightVecW;
-	float gTime;
-	XMFLOAT4 AmbientMaterial;
-	XMFLOAT4 AmbientLight;
-	XMFLOAT4 SpecularMaterial;
-	XMFLOAT4 SpecularLight;
-	float SpecularPower;
-	XMFLOAT3 EyePosW;
-};
 
 class Application
 {
@@ -63,12 +41,14 @@ private:
 	ID3D11Texture2D*		_depthStencilBuffer;
 	ID3D11ShaderResourceView * _pTextureRV = nullptr;
 	ID3D11SamplerState * _pSamplerLinear = nullptr;
+	MeshData				objMeshData;
 	XMFLOAT4X4              _world;
 	XMFLOAT4X4				_world2;
 	XMFLOAT4X4				_world3;
 	XMFLOAT4X4				_world4;
 	XMFLOAT4X4				_world5;
 	XMFLOAT4X4				_worldGrid;
+	XMFLOAT4X4				_worldSphere;
 	XMFLOAT3				lightDirection;
 	XMFLOAT4				diffuseMaterial;
 	XMFLOAT4				diffuseLight;
