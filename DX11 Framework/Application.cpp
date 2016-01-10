@@ -85,9 +85,13 @@ HRESULT Application::Initialise(HINSTANCE hInstance, int nCmdShow)
 	XMFLOAT4 To2 = { 0.0f, -1.0f, 0.0f, 0.0f };
 	XMFLOAT4 Up3 = { 0.0f, 0.0f, 1.0f, 0.0f };
 
+	XMFLOAT4 Eye4 = { 10.0f, 0.0f, -20.0f, 0.0f };
+	XMFLOAT4 To3 = { -0.5f, 0.0f, 1.0f, 0.0f };
+
 	camera1 = new Camera(Eye, At, Up, _WindowWidth, _WindowHeight);
 	camera2 = new LookToCamera(Eye2, To, Up2, _WindowWidth, _WindowHeight);
 	camera3 = new LookToCamera(Eye3, To2, Up3, _WindowWidth, _WindowHeight);
+	camera4 = new LookToCamera(Eye4, To3, Up2, _WindowWidth, _WindowHeight);
 
 	lookToMove = { 0.0f, 0.0f, -0.4f, 0.0f };
 	lookToMove2 = { 0.0f, 0.0f, 0.4f, 0.0f };
@@ -833,6 +837,13 @@ void Application::Update()
 		_View = camera3->CreateView();
 		_Projection = camera3->CreateProjection();
 		activeCamera = 3;
+	}
+
+	if (GetAsyncKeyState('O'))
+	{
+		_View = camera4->CreateView();
+		_Projection = camera4->CreateProjection();
+		activeCamera = 4;
 	}
 
 	if (activeCamera == 1)

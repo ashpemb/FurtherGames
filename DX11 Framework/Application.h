@@ -69,6 +69,7 @@ private:
 	Camera*					camera1;
 	LookToCamera*			camera2;
 	LookToCamera*			camera3;
+	LookToCamera*			camera4;
 	XMFLOAT4X4				_View;
 	XMFLOAT4X4				_Projection;
 	XMFLOAT4				lookToMove;
