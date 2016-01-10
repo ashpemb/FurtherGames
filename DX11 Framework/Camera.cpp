@@ -32,7 +32,7 @@ XMFLOAT4X4 Camera::CreateProjection()
 
 void Camera::ZoomEye(float gTime, float Speed)
 {
-	gTime = gTime / 1000.0f;
+	gTime = gTime / 10000000.0f;
 	Eye.x += (Zoom.x * Speed) * gTime;
 	Eye.y += (Zoom.y * Speed) * gTime;
 	Eye.z += (Zoom.z * Speed) * gTime;

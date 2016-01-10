@@ -70,41 +70,64 @@ HRESULT Application::Initialise(HINSTANCE hInstance, int nCmdShow)
     }
 
 	objMeshData = OBJLoader::Load("sphere.obj", _pd3dDevice);
+	planeMesh = OBJLoader::Load("Hercules.obj", _pd3dDevice);
+	terrainMesh = OBJLoader::Load("terrain.obj", _pd3dDevice);
 
 	XMFLOAT4 Eye = { 0.0f, 5.0f, -10.0f, 0.0f };
 	XMFLOAT4 At = { 0.0f, 0.0f, 0.0f, 0.0f };
 	XMFLOAT4 Up = { 0.0f, 1.0f, 0.0f, 0.0f };
 
-	XMFLOAT4 Eye2 = { 0.0f, 0.0f, -10.0f, 0.0f };
-	XMFLOAT4 To = { 0.0f, 0.0f, 1.0f, 0.0f };
+	XMFLOAT4 Eye2 = { 0.0f, 0.0f, 40.0f, 0.0f };
+	XMFLOAT4 To = { 0.0f, 0.0f, -1.0f, 0.0f };
 	XMFLOAT4 Up2 = { 0.0f, 1.0f, 0.0f, 0.0f };
+
+	XMFLOAT4 Eye3 = { 0.0f, 10.0f, 0.0f, 0.0f };
+	XMFLOAT4 To2 = { 0.0f, -1.0f, 0.0f, 0.0f };
+	XMFLOAT4 Up3 = { 0.0f, 0.0f, 1.0f, 0.0f };
 
 	camera1 = new Camera(Eye, At, Up, _WindowWidth, _WindowHeight);
 	camera2 = new LookToCamera(Eye2, To, Up2, _WindowWidth, _WindowHeight);
+	camera3 = new LookToCamera(Eye3, To2, Up3, _WindowWidth, _WindowHeight);
 
-	lookToMove = { 0.0f, 0.0f, 0.2f, 0.0f };
-	lookToMove2 = { 0.0f, 0.0f, -0.2f, 0.0f };
-	lookToMoveUpX = { 0.2f, 0.0f, 0.0f, 0.0f };
-	lookToMoveDownX = { -0.2f, 0.0f, 0.0f, 0.0f };
-	lookToMoveUpY = { 0.0f, 0.2f, 0.0f, 0.0f };
-	lookToMoveDownY = { 0.0f, -0.2f, 0.0f, 0.0f };
+	lookToMove = { 0.0f, 0.0f, -0.4f, 0.0f };
+	lookToMove2 = { 0.0f, 0.0f, 0.4f, 0.0f };
+	lookToMoveUpX = { -0.4f, 0.0f, 0.0f, 0.0f };
+	lookToMoveDownX = { 0.4f, 0.0f, 0.0f, 0.0f };
+	lookToMoveUpY = { 0.0f, -0.4f, 0.0f, 0.0f };
+	lookToMoveDownY = { 0.0f, 0.4f, 0.0f, 0.0f };
 
 	activeCamera = 1;
 
 	_View = camera1->CreateView();
 	_Projection = camera1->CreateProjection();
 
+
+	_sphere = new GameObject;
+	
+	_sphere->Initialise(objMeshData);
+	_sphere->SetTranslation(0.0f, 10.0f, 0.0f);
+	_sphere->UpdateWorld();
+
+	_terrain = new GameObject;
+	_terrain->Initialise(terrainMesh);
+	_terrain->SetTranslation(0.0f, -60.0f, 0.0f);
+	_terrain->SetScale(40.0f, 20.0f, 40.0f);
+	_terrain->UpdateWorld();
+
+	_plane = new GameObject;
+	_plane->Initialise(planeMesh);
+	_plane->SetTranslation((camera2->GetVector().x), (camera2->GetVector().y - 10), (camera2->GetVector().z - 30));
+	_plane->UpdateWorld();
+
 	// Initialize the world matrix
 	XMStoreFloat4x4(&_world, XMMatrixIdentity());
-
 	XMStoreFloat4x4(&_world2, XMMatrixIdentity());
-
 	XMStoreFloat4x4(&_world3, XMMatrixIdentity());
 	XMStoreFloat4x4(&_world4, XMMatrixIdentity());
 	XMStoreFloat4x4(&_world5, XMMatrixIdentity());
 	XMStoreFloat4x4(&_worldGrid, XMMatrixIdentity());
-	XMStoreFloat4x4(&_worldSphere, XMMatrixIdentity());
 
+	
 
 	// Create the sample state
 	D3D11_SAMPLER_DESC sampDesc;
@@ -194,7 +217,9 @@ HRESULT Application::InitShadersAndInputLayout()
 
 	CreateDDSTextureFromFile(_pd3dDevice, L"Crate_COLOR.dds", nullptr, &_pTextureRV);
 
-	_pImmediateContext->PSSetShaderResources(0, 1, &_pTextureRV);
+	CreateDDSTextureFromFile(_pd3dDevice, L"desert.dds", nullptr, &_pTextureTerrain);
+
+	CreateDDSTextureFromFile(_pd3dDevice, L"Hercules_COLOR.dds", nullptr, &_pTexturePlane);
 
 	return hr;
 }
@@ -743,6 +768,7 @@ void Application::Update()
 {
     // Update our time
     static float t = 0.0f;
+	static float dt = 0.0f;
 
     if (_driverType == D3D_DRIVER_TYPE_REFERENCE)
     {
@@ -761,7 +787,23 @@ void Application::Update()
 
 	gTime = t;
 
+	if (_driverType == D3D_DRIVER_TYPE_REFERENCE)
+	{
+		dt += (float)XM_PI * 0.0125f;
+	}
+	else
+	{
+		static DWORD dwTime1 = 0;
+		DWORD dwTime2 = GetTickCount();
 
+		if (dwTime1 == 0)
+			dwTime1 = dwTime2;
+
+		dt = (dwTime1 - dwTime2);
+		dwTime1 = dwTime2;
+	}
+
+	dt /= 1000.0f;
 
 	if (GetAsyncKeyState('V'))
 	{
@@ -785,19 +827,27 @@ void Application::Update()
 		_Projection = camera1->CreateProjection();
 		activeCamera = 1;
 	}
+
+	if (GetAsyncKeyState('I'))
+	{
+		_View = camera3->CreateView();
+		_Projection = camera3->CreateProjection();
+		activeCamera = 3;
+	}
+
 	if (activeCamera == 1)
 	{
 		if (GetAsyncKeyState('W'))
 		{
 			float speed = 0.1f;
-			camera1->ZoomEye(gTime, speed);
+			camera1->ZoomEye(dt, speed);
 			_View = camera1->CreateView();
 		}
 
 		if (GetAsyncKeyState('S'))
 		{
 			float speed = -0.1f;
-			camera1->ZoomEye(gTime, speed);
+			camera1->ZoomEye(dt, speed);
 			_View = camera1->CreateView();
 		}
 	}
@@ -806,38 +856,44 @@ void Application::Update()
 
 		if (GetAsyncKeyState('W'))
 		{
-			camera2->MoveEye(lookToMove, gTime);
+			camera2->MoveEye(lookToMove, dt);
 			_View = camera2->CreateView();
+			_plane->SetTranslation((camera2->GetVector().x), (camera2->GetVector().y - 10), (camera2->GetVector().z - 30));
 		}
 
 		if (GetAsyncKeyState('S'))
 		{
-			camera2->MoveEye(lookToMove2, gTime);
+			camera2->MoveEye(lookToMove2, dt);
 			_View = camera2->CreateView();
+			_plane->SetTranslation((camera2->GetVector().x), (camera2->GetVector().y - 10), (camera2->GetVector().z - 30));
 		}
 
 		if (GetAsyncKeyState('A'))
 		{
-			camera2->MoveEye(lookToMoveDownX, gTime);
+			camera2->MoveEye(lookToMoveDownX, dt);
 			_View = camera2->CreateView();
+			_plane->SetTranslation((camera2->GetVector().x), (camera2->GetVector().y - 10), (camera2->GetVector().z - 30));
 		}
 
 		if (GetAsyncKeyState('D'))
 		{
-			camera2->MoveEye(lookToMoveUpX, gTime);
+			camera2->MoveEye(lookToMoveUpX, dt);
 			_View = camera2->CreateView();
+			_plane->SetTranslation((camera2->GetVector().x), (camera2->GetVector().y - 10), (camera2->GetVector().z - 30));
 		}
 
 		if (GetAsyncKeyState('R'))
 		{
-			camera2->MoveEye(lookToMoveUpY, gTime);
+			camera2->MoveEye(lookToMoveDownY, dt);
 			_View = camera2->CreateView();
+			_plane->SetTranslation((camera2->GetVector().x), (camera2->GetVector().y - 10), (camera2->GetVector().z - 30));
 		}
 
 		if (GetAsyncKeyState('F'))
 		{
-			camera2->MoveEye(lookToMoveDownY, gTime);
+			camera2->MoveEye(lookToMoveUpY, dt);
 			_View = camera2->CreateView();
+			_plane->SetTranslation((camera2->GetVector().x), (camera2->GetVector().y - 10), (camera2->GetVector().z - 30));
 		}
 	}
 
@@ -850,7 +906,10 @@ void Application::Update()
 	XMStoreFloat4x4(&_world4, XMMatrixRotationY(2*t) * XMMatrixTranslation(-25.0f, 0.0f, 0.0f) * XMMatrixRotationY(-t));
 	XMStoreFloat4x4(&_world5, XMMatrixScaling(0.5f, 0.5f, 0.5f) * XMMatrixTranslation(7.0f, 0.0f, 0.0f) * XMMatrixRotationY(-2*t) * XMMatrixTranslation(-25.0f, 0.0f, 0.0f) * XMMatrixRotationY(-t));
 	XMStoreFloat4x4(&_worldGrid, XMMatrixScaling(1.5f, 1.5f, 1.5f) * XMMatrixRotationY(t) * XMMatrixTranslation(0.0f, 0.0f, -5.0f));
-	XMStoreFloat4x4(&_worldSphere, XMMatrixTranslation(0.0f, 10.0f, 0.0f) * XMMatrixRotationY(t));
+	_sphere->Update(t);
+	_terrain->Update(t);
+	_plane->Update(t);
+	_plane->UpdateWorld();
 }
 
 void Application::Draw()
@@ -868,8 +927,16 @@ void Application::Draw()
 
 
 	XMMATRIX world = XMLoadFloat4x4(&_world);
+	XMMATRIX world2 = XMLoadFloat4x4(&_world2);
+	XMMATRIX world3 = XMLoadFloat4x4(&_world3);
+	XMMATRIX world4 = XMLoadFloat4x4(&_world4);
+	XMMATRIX world5 = XMLoadFloat4x4(&_world5);
+	XMMATRIX world6 = XMLoadFloat4x4(&_worldGrid);
 	XMMATRIX view = XMLoadFloat4x4(&_View);
 	XMMATRIX projection = XMLoadFloat4x4(&_Projection);
+	XMMATRIX sphere = XMLoadFloat4x4(&_sphere->GetWorld());
+	XMMATRIX terrain = XMLoadFloat4x4(&_terrain->GetWorld());
+	XMMATRIX plane = XMLoadFloat4x4(&_plane->GetWorld());
 
 	UINT stride = sizeof(SimpleVertex);
 	UINT offset = 0;
@@ -904,6 +971,8 @@ void Application::Draw()
     //
     // Renders a triangle
     //
+	_pImmediateContext->PSSetShaderResources(0, 1, &_pTextureRV);
+
 	_pImmediateContext->VSSetShader(_pVertexShader, nullptr, 0);
 	_pImmediateContext->VSSetConstantBuffers(0, 1, &_pConstantBuffer);
 	_pImmediateContext->PSSetShader(_pPixelShader, nullptr, 0);
@@ -913,45 +982,51 @@ void Application::Draw()
 	_pImmediateContext->IASetVertexBuffers(0, 1, &_pPyramidVertexBuffer, &stride, &offset);
 	_pImmediateContext->IASetIndexBuffer(_pPyramidIndexBuffer, DXGI_FORMAT_R16_UINT, 0);
 
-	world = XMLoadFloat4x4(&_world2);
+	
+
 	// 2nd cube
-	cb.mWorld = XMMatrixTranspose(world);
+	cb.mWorld = XMMatrixTranspose(world2);
 	_pImmediateContext->UpdateSubresource(_pConstantBuffer, 0, nullptr, &cb, 0, 0);
 	_pImmediateContext->DrawIndexed(18, 0, 0);
 
 	_pImmediateContext->IASetVertexBuffers(0, 1, &_pVertexBuffer, &stride, &offset);
 	_pImmediateContext->IASetIndexBuffer(_pIndexBuffer, DXGI_FORMAT_R16_UINT, 0);
 
-	world = XMLoadFloat4x4(&_world3);
-	cb.mWorld = XMMatrixTranspose(world);
+	cb.mWorld = XMMatrixTranspose(world3);
 	_pImmediateContext->UpdateSubresource(_pConstantBuffer, 0, nullptr, &cb, 0, 0);
 	_pImmediateContext->DrawIndexed(36, 0, 0);
 
-	world = XMLoadFloat4x4(&_world4);
-	cb.mWorld = XMMatrixTranspose(world);
+	cb.mWorld = XMMatrixTranspose(world4);
 	_pImmediateContext->UpdateSubresource(_pConstantBuffer, 0, nullptr, &cb, 0, 0);
 	_pImmediateContext->DrawIndexed(36, 0, 0);
 
-	world = XMLoadFloat4x4(&_world5);
-	cb.mWorld = XMMatrixTranspose(world);
+	cb.mWorld = XMMatrixTranspose(world5);
 	_pImmediateContext->UpdateSubresource(_pConstantBuffer, 0, nullptr, &cb, 0, 0);
 	_pImmediateContext->DrawIndexed(36, 0, 0);
 
 	_pImmediateContext->IASetVertexBuffers(0, 1, &_pGridVertexBuffer, &stride, &offset);
 	_pImmediateContext->IASetIndexBuffer(_pGridIndexBuffer, DXGI_FORMAT_R16_UINT, 0);
 
-	world = XMLoadFloat4x4(&_worldGrid);
-	cb.mWorld = XMMatrixTranspose(world);
+	cb.mWorld = XMMatrixTranspose(world6);
 	_pImmediateContext->UpdateSubresource(_pConstantBuffer, 0, nullptr, &cb, 0, 0);
 	_pImmediateContext->DrawIndexed(96, 0, 0);
 
-	_pImmediateContext->IASetVertexBuffers(0, 1, &objMeshData.VertexBuffer, &stride, &offset);
-	_pImmediateContext->IASetIndexBuffer(objMeshData.IndexBuffer, DXGI_FORMAT_R16_UINT, 0);
-
-	world = XMLoadFloat4x4(&_worldSphere);
-	cb.mWorld = XMMatrixTranspose(world);
+	cb.mWorld = XMMatrixTranspose(sphere);
 	_pImmediateContext->UpdateSubresource(_pConstantBuffer, 0, nullptr, &cb, 0, 0);
-	_pImmediateContext->DrawIndexed(objMeshData.IndexCount, 0, 0);
+	_sphere->Draw(_pd3dDevice, _pImmediateContext);
+
+	_pImmediateContext->PSSetShaderResources(0, 1, &_pTexturePlane);
+
+	
+	cb.mWorld = XMMatrixTranspose(plane);
+	_pImmediateContext->UpdateSubresource(_pConstantBuffer, 0, nullptr, &cb, 0, 0);
+	_plane->Draw(_pd3dDevice, _pImmediateContext);
+
+	_pImmediateContext->PSSetShaderResources(0, 1, &_pTextureTerrain);
+
+	cb.mWorld = XMMatrixTranspose(terrain);
+	_pImmediateContext->UpdateSubresource(_pConstantBuffer, 0, nullptr, &cb, 0, 0);
+	_terrain->Draw(_pd3dDevice, _pImmediateContext);
 
     //
     // Present our back buffer to our front buffer

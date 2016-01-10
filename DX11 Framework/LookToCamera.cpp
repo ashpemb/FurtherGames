@@ -32,12 +32,17 @@ XMFLOAT4X4 LookToCamera::CreateProjection()
 void LookToCamera::MoveEye(XMFLOAT4 _move, float gTime)
 {
 	XMFLOAT4 move = _move;
-	gTime = gTime / 1000.0f;
+	gTime = gTime / 10000000.0f;
 	Eye.w = Eye.w + (move.w * gTime);
 	Eye.x = Eye.x + (move.x * gTime);
 	Eye.y = Eye.y + (move.y * gTime);
 	Eye.z = Eye.z + (move.z * gTime);
 	CreateView();
+}
+
+XMFLOAT4 LookToCamera::GetVector()
+{
+	return Eye;
 }
 
 LookToCamera::~LookToCamera()

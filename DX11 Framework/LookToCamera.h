@@ -19,6 +19,7 @@ public:
 	XMFLOAT4X4 CreateView();
 	XMFLOAT4X4 CreateProjection();
 	void MoveEye(XMFLOAT4 _move, float gtime);
+	XMFLOAT4 GetVector();
 
 private:
 	XMFLOAT4 Eye;
