@@ -45,6 +45,13 @@ XMFLOAT4 LookToCamera::GetVector()
 	return Eye;
 }
 
+void LookToCamera::setEye(float x, float y, float z)
+{
+	Eye.x = x;
+	Eye.y = y;
+	Eye.z = z;
+}
+
 LookToCamera::~LookToCamera()
 {
 }

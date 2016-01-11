@@ -72,6 +72,7 @@ HRESULT Application::Initialise(HINSTANCE hInstance, int nCmdShow)
 	objMeshData = OBJLoader::Load("sphere.obj", _pd3dDevice);
 	planeMesh = OBJLoader::Load("Hercules.obj", _pd3dDevice);
 	terrainMesh = OBJLoader::Load("terrain.obj", _pd3dDevice);
+	starMesh = OBJLoader::Load("star.obj", _pd3dDevice);
 
 	XMFLOAT4 Eye = { 0.0f, 5.0f, -10.0f, 0.0f };
 	XMFLOAT4 At = { 0.0f, 0.0f, 0.0f, 0.0f };
@@ -88,10 +89,14 @@ HRESULT Application::Initialise(HINSTANCE hInstance, int nCmdShow)
 	XMFLOAT4 Eye4 = { 10.0f, 0.0f, -20.0f, 0.0f };
 	XMFLOAT4 To3 = { -0.5f, 0.0f, 1.0f, 0.0f };
 
+	XMFLOAT4 Eye5 = { 10.0f, -10.0f, 10.0f, 0.0f };
+
 	camera1 = new Camera(Eye, At, Up, _WindowWidth, _WindowHeight);
 	camera2 = new LookToCamera(Eye2, To, Up2, _WindowWidth, _WindowHeight);
 	camera3 = new LookToCamera(Eye3, To2, Up3, _WindowWidth, _WindowHeight);
 	camera4 = new LookToCamera(Eye4, To3, Up2, _WindowWidth, _WindowHeight);
+	camera5 = new LookToCamera(Eye5, To, Up2, _WindowWidth, _WindowHeight);
+
 
 	lookToMove = { 0.0f, 0.0f, -0.4f, 0.0f };
 	lookToMove2 = { 0.0f, 0.0f, 0.4f, 0.0f };
@@ -122,6 +127,11 @@ HRESULT Application::Initialise(HINSTANCE hInstance, int nCmdShow)
 	_plane->Initialise(planeMesh);
 	_plane->SetTranslation((camera2->GetVector().x), (camera2->GetVector().y - 10), (camera2->GetVector().z - 30));
 	_plane->UpdateWorld();
+
+	_star = new GameObject;
+	_star->Initialise(starMesh);
+	_star->SetTranslation(0.0f, 0.0f, 10.0f);
+	_star->UpdateWorld();
 
 	// Initialize the world matrix
 	XMStoreFloat4x4(&_world, XMMatrixIdentity());
@@ -820,6 +830,7 @@ void Application::Update()
 
 	if (GetAsyncKeyState('Z'))
 	{
+		camera2->setEye((camera5->GetVector().x - 10), (camera5->GetVector().y + 10), (camera5->GetVector().z + 30));
 		_View = camera2->CreateView();
 		_Projection = camera2->CreateProjection();
 		activeCamera = 2;
@@ -844,6 +855,14 @@ void Application::Update()
 		_View = camera4->CreateView();
 		_Projection = camera4->CreateProjection();
 		activeCamera = 4;
+	}
+
+	if (GetAsyncKeyState('P'))
+	{
+		camera5->setEye((camera2->GetVector().x + 10), (camera2->GetVector().y - 10), (camera2->GetVector().z - 30));
+		_View = camera5->CreateView();
+		_Projection = camera5->CreateProjection();
+		activeCamera = 5;
 	}
 
 	if (activeCamera == 1)
@@ -907,6 +926,51 @@ void Application::Update()
 			_plane->SetTranslation((camera2->GetVector().x), (camera2->GetVector().y - 10), (camera2->GetVector().z - 30));
 		}
 	}
+		else if (activeCamera == 5)
+		{
+
+			if (GetAsyncKeyState('W'))
+			{
+				camera5->MoveEye(lookToMove, dt);
+				_View = camera5->CreateView();
+				_plane->SetTranslation((camera5->GetVector().x - 10), (camera5->GetVector().y), (camera5->GetVector().z));
+			}
+
+			if (GetAsyncKeyState('S'))
+			{
+				camera5->MoveEye(lookToMove2, dt);
+				_View = camera5->CreateView();
+				_plane->SetTranslation((camera5->GetVector().x - 10), (camera5->GetVector().y), (camera5->GetVector().z));
+			}
+
+			if (GetAsyncKeyState('A'))
+			{
+				camera5->MoveEye(lookToMoveDownX, dt);
+				_View = camera5->CreateView();
+				_plane->SetTranslation((camera5->GetVector().x - 10), (camera5->GetVector().y), (camera5->GetVector().z));
+			}
+
+			if (GetAsyncKeyState('D'))
+			{
+				camera5->MoveEye(lookToMoveUpX, dt);
+				_View = camera5->CreateView();
+				_plane->SetTranslation((camera5->GetVector().x - 10), (camera5->GetVector().y), (camera5->GetVector().z));
+			}
+
+			if (GetAsyncKeyState('R'))
+			{
+				camera5->MoveEye(lookToMoveDownY, dt);
+				_View = camera5->CreateView();
+				_plane->SetTranslation((camera5->GetVector().x - 10), (camera5->GetVector().y), (camera5->GetVector().z));
+			}
+
+			if (GetAsyncKeyState('F'))
+			{
+				camera5->MoveEye(lookToMoveUpY, dt);
+				_View = camera5->CreateView();
+				_plane->SetTranslation((camera5->GetVector().x - 10), (camera5->GetVector().y), (camera5->GetVector().z));
+			}
+	}
 
     //
     // Animate the cube
@@ -920,7 +984,7 @@ void Application::Update()
 	_sphere->Update(t);
 	_terrain->Update(t);
 	_plane->Update(t);
-	_plane->UpdateWorld();
+	_star->Update(t);
 }
 
 void Application::Draw()
@@ -948,6 +1012,8 @@ void Application::Draw()
 	XMMATRIX sphere = XMLoadFloat4x4(&_sphere->GetWorld());
 	XMMATRIX terrain = XMLoadFloat4x4(&_terrain->GetWorld());
 	XMMATRIX plane = XMLoadFloat4x4(&_plane->GetWorld());
+	XMMATRIX star = XMLoadFloat4x4(&_star->GetWorld());
+
 
 	UINT stride = sizeof(SimpleVertex);
 	UINT offset = 0;
@@ -1038,6 +1104,10 @@ void Application::Draw()
 	cb.mWorld = XMMatrixTranspose(terrain);
 	_pImmediateContext->UpdateSubresource(_pConstantBuffer, 0, nullptr, &cb, 0, 0);
 	_terrain->Draw(_pd3dDevice, _pImmediateContext);
+
+	cb.mWorld = XMMatrixTranspose(star);
+	_pImmediateContext->UpdateSubresource(_pConstantBuffer, 0, nullptr, &cb, 0, 0);
+	_star->Draw(_pd3dDevice, _pImmediateContext);
 
     //
     // Present our back buffer to our front buffer

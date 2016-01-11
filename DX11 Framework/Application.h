@@ -47,9 +47,11 @@ private:
 	MeshData				objMeshData;
 	MeshData				planeMesh;
 	MeshData				terrainMesh;
+	MeshData				starMesh;
 	GameObject*				_sphere;
 	GameObject*				_terrain;
 	GameObject*				_plane;
+	GameObject*             _star;
 	XMFLOAT4X4              _world;
 	XMFLOAT4X4				_world2;
 	XMFLOAT4X4				_world3;
@@ -70,6 +72,7 @@ private:
 	LookToCamera*			camera2;
 	LookToCamera*			camera3;
 	LookToCamera*			camera4;
+	LookToCamera*			camera5;
 	XMFLOAT4X4				_View;
 	XMFLOAT4X4				_Projection;
 	XMFLOAT4				lookToMove;

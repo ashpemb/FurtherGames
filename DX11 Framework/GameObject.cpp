@@ -44,7 +44,7 @@ void GameObject::UpdateWorld()
 
 void GameObject::Update(float elapsedTime)
 {
-	// TODO: Add GameObject logic 
+	UpdateWorld();
 }
 
 void GameObject::Draw(ID3D11Device * pd3dDevice, ID3D11DeviceContext * pImmediateContext)
